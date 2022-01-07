@@ -4,7 +4,7 @@
   "description": "A dummy twitter like application",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha --timeout 10000 --exit"
   },
   "author": "",
   "license": "ISC",

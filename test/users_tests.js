@@ -242,14 +242,12 @@ describe("Users APIs testing", ()=>{
 
 		// scenario: when valid required fields are provided
 	 	it("Check if endpoint saves the tweet and return status 201.",(done)  =>{
-	 		console.log(jwtToken)
 	 		chai.request(app)
 	 		.post("/tweet/create")
 	 		.send(tweetObj)
 	 		.set("Authorization", "Bearer "+jwtToken)
 	 		// .set("Authorization", "Bearer "+jwtToken)
 	 		.end((err, res)=>{
-	 			console.log(res.error)
 	 			res.should.have.status(201);
 	 			res.should.be.a('object');
 	 			res.body.should.have.property("success").eq("Tweet created successfully!");
@@ -378,47 +376,41 @@ describe("Users APIs testing", ()=>{
 	 	});
 
 	    //scenario: when different user tries to update somebody's tweet
-	    it("Check if endpoint returns the error with status 403 some random tweetId is used to send update request.",(done)  =>{
+	    it("Check if endpoint returns the error with status 403 when different user tries to update somebody's tweet.",async ()  =>{
+	    	try{
 	    	//lets register another user first:
-	    	chai.request(app)
+	    	let registerResult = await chai.request(app)
 	 		.post("/user/register")
-	 		.send(userObj2)
-	 		.end((err, res)=>{
-	 			if(res.success){
-	 				chai.request(app)
-			 		.post("/user/login")
-			 		.send(userObj2)
-			 		.end((err, res)=>{
-			 			if(res.success){
-			 				chai.request(app)
-					 		.post("/tweet/create")
-					 		.set("Authorization", "Bearer "+jwtToken)
-					 		.send(tweetObj)
-					 		.end((err, res)=>{
-					 			if(res.success && res.tweetId){
-					 				userObj2.tweetId = res.tweetId
-					 				chai.request(app)
-							 		.put("/tweet/"+userObj2.tweetId)//Using 2nd user's posted tweet ID
-							 		.set("Authorization", "Bearer "+jwtToken)
-							 		.send(tweetObj)
-							 		.end((err, res)=>{
-							 			res.should.have.status(403);
-							 			res.should.be.a('object');
-							 			res.body.should.have.property("error").eq("Tweet can only be updated by its owner!");
-							 			done();
-							 		})
-					 			}
-					 		})
-			 			}
-			 		});
-	 			}
-	 			
-	 			if(res.success){
-	 				
-	 			}
-	 		})
+	 		.send(userObj2);
 
-	 		
+ 			if(registerResult.success){
+ 				let loginResult = await chai.request(app)
+		 		.post("/user/login")
+		 		.send(userObj2);
+		 		
+	 			if(loginResult.success){
+	 				let createTweetResult = await chai.request(app)
+			 		.post("/tweet/create")
+			 		.set("Authorization", "Bearer "+jwtToken)
+			 		.send(tweetObj)
+
+		 			if(createTweetResult.success && createTweetResult.tweetId){
+		 				userObj2.tweetId = createTweetResult.tweetId
+		 				let illegalUpdate = await chai.request(app)
+				 		.put("/tweet/"+userObj2.tweetId)//Using 2nd user's posted tweet ID
+				 		.set("Authorization", "Bearer "+jwtToken)
+				 		.send(tweetObj)
+				 		
+			 			illegalUpdate.should.have.status(403);
+			 			illegalUpdate.should.be.a('object');
+			 			illegalUpdate.body.should.have.property("error").eq("Tweet can only be updated by its owner!");
+		 			}
+	 			}
+ 			}
+ 			}catch(err){
+ 				console.log(err)
+ 			}	
+	 			
 	 	});
 	});
 
@@ -429,10 +421,10 @@ describe("Users APIs testing", ()=>{
 		//scenario: when valid required fields are provided
 	 	it("Check if endpoint updates the tweet and return status 200.",(done)  =>{
 	 		chai.request(app)
-	 		.set("Authorization", "Bearer "+jwtToken)
 	 		.get("/tweet/"+tweetUpdateObj.tweetId)
+	 		.set("Authorization", "Bearer "+jwtToken)
 	 		.end((err, res)=>{
-	 			res.should.have.status(201);
+	 			res.should.have.status(200);
 	 			res.should.be.a('object');
 	 			res.body.should.have.property("success");
 	 			res.body.should.have.property("tweet");
@@ -455,8 +447,8 @@ describe("Users APIs testing", ()=>{
 		//scenario: when auth token is invalid or expired
 		it("Check if endpoint returns the error with status 400 when auth-token is invalid.",(done)  =>{
 	 		chai.request(app)
-	 		.set("jwt-auth-token", "someRandomString")
 	 		.get("/tweet/"+tweetUpdateObj.tweetId)
+	 		.set("jwt-auth-token", "someRandomString")
 	 		// .send(tweetUpdateObj)
 	 		.end((err, res)=>{
 	 			res.should.have.status(401);
@@ -469,8 +461,8 @@ describe("Users APIs testing", ()=>{
 		//scenario: when some random tweetId is used to get data
 		it("Check if endpoint returns the error with status 404 when some random tweetId is used to get data.",(done)  =>{
 	 		chai.request(app)
-	 		.set("Authorization", "Bearer "+jwtToken)
 	 		.get("/tweet/"+"someRandomString")
+	 		.set("Authorization", "Bearer "+jwtToken)
 	 		// .send(tweetUpdateObj)
 	 		.end((err, res)=>{
 	 			res.should.have.status(404);
@@ -502,8 +494,8 @@ describe("Users APIs testing", ()=>{
 		//scenario: when auth token is invalid or expired
 		it("Check if endpoint returns the error with status 400 when auth-token is invalid.",(done)  =>{
 	 		chai.request(app)
-	 		.set("jwt-auth-token", "someRandomString")
 	 		.delete("/tweet/"+tweetUpdateObj.tweetId)
+	 		.set("jwt-auth-token", "someRandomString")
 	 		// .send(tweetUpdateObj)
 	 		.end((err, res)=>{
 	 			res.should.have.status(401);
@@ -519,13 +511,12 @@ describe("Users APIs testing", ()=>{
 	    //scenario: when valid required fields are provided
 	 	it("Check if endpoint updates the tweet and return status 200.",(done)  =>{
 	 		chai.request(app)
-	 		.set("Authorization", "Bearer "+jwtToken)
 	 		.delete("/tweet/"+tweetUpdateObj.tweetId)
+	 		.set("Authorization", "Bearer "+jwtToken)
 	 		.end((err, res)=>{
 	 			res.should.have.status(201);
 	 			res.should.be.a('object');
 	 			res.body.should.have.property("success");
-	 			res.body.should.have.property("tweet");
 	 			done();
 	 		})
 	 	});
@@ -539,8 +530,8 @@ describe("Users APIs testing", ()=>{
 	 	it("Check if endpoint creates the chat and returns status 201.",(done)  =>{
 	 		chai.request(app)
 	 		.post("/chat/create")
-	 		.send({participants: participantsChat1})
 	 		.set("Authorization", "Bearer "+jwtToken)
+	 		.send({participants: participantsChat1})
 	 		.end((err, res)=>{
 	 			res.should.have.status(201);
 	 			res.should.be.a('object');
@@ -552,9 +543,9 @@ describe("Users APIs testing", ()=>{
 	 	});
 
 		//scenario: when auth-token is missing
-		it("Check if endpoint returns the error with status 400 when auth-token is missing in request.",(done)  =>{
+		it("Check if endpoint returns the error with status 401 when auth-token is missing in request.",(done)  =>{
 	 		chai.request(app)
-	 		.put("/chat/create")
+	 		.post("/chat/create")
 	 		.send({participants: participantsChat1})
 	 		.end((err, res)=>{
 	 			res.should.have.status(401);
@@ -565,9 +556,9 @@ describe("Users APIs testing", ()=>{
 	 	});
 
 		//scenario: when auth token is invalid or expired
-		it("Check if endpoint returns the error with status 400 when auth-token is invalid.",(done)  =>{
+		it("Check if endpoint returns the error with status 401 when auth-token is invalid.",(done)  =>{
 	 		chai.request(app)
-	 		.put("/chat/create")
+	 		.post("/chat/create")
 	 		.send({participants: participantsChat1})
 	 		.set("jwt-auth-token", "someRandomString")
 	 		.end((err, res)=>{
@@ -579,11 +570,11 @@ describe("Users APIs testing", ()=>{
 	 	});
 
 		//scenario: when participants field is missing
-		it("Check if endpoint returns the error with status 400 when auth-token is invalid.",(done)  =>{
+		it("Check if endpoint returns the error with status 400 when participants field is missing.",(done)  =>{
 	 		chai.request(app)
-	 		.put("/chat/create")
+	 		.post("/chat/create")
 	 		.send({})
-	 		.set("jwt-auth-token", "someRandomString")
+	 		.set("Authorization", "Bearer "+jwtToken)
 	 		.end((err, res)=>{
 	 			res.should.have.status(400);
 	 			res.should.be.a('object');
@@ -641,11 +632,11 @@ describe("Users APIs testing", ()=>{
 	 	});
 
 		//scenario: when txt field is missing
-		it("Check if endpoint returns the error with status 400 when auth-token is invalid.",(done)  =>{
+		it("Check if endpoint returns the error with status 400 when txt field is missing.",(done)  =>{
 	 		chai.request(app)
-	 		.put("/chat/create")
+	 		.post("/chat/new_msg")
+	 		.set("Authorization", "Bearer "+jwtToken)
 	 		.send({chatId:txtMsgObj.chatId})
-	 		.set("jwt-auth-token", "someRandomString")
 	 		.end((err, res)=>{
 	 			res.should.have.status(400);
 	 			res.should.be.a('object');
@@ -671,7 +662,7 @@ describe("Users APIs testing", ()=>{
 	 		.end((err, res)=>{
 	 			res.should.have.status(201);
 	 			res.should.be.a('object');
-	 			res.body.should.have.property("success").eq("Message added to chat successfully!");
+	 			res.body.should.have.property("success");
 	 			done();
 	 		})
 	 	});

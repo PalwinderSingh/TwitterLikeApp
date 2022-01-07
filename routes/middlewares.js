@@ -14,15 +14,13 @@ module.exports = {
       try{
         const authorization = req.header('Authorization')
         let jwtToken;
-        if (authorization){//(!authorization && authorization==null) {
-          console.log("Authorization",authorization)
+        if (authorization){
           jwtToken = authorization.split(" ")[1]
 
           if(!jwtToken){
             return res.status(401).send({error:"Access Denied!"});
           }
 
-          // console.log("JWTTOKEN",jwtToken)
           const verified = jwt.verify(jwtToken, config._JWT_TOKEN_SECRET)
           req.user = verified
           //continue processing the endpoint requested
@@ -31,7 +29,6 @@ module.exports = {
           res.status(401).send({error:"Access Denied!"});
 
         }
-          
         
       }catch(err){
         console.log(err)

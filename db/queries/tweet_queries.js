@@ -40,7 +40,7 @@ var self = module.exports = {
             try{
                 const tweetDetails = await redisClient.HGET("tweets", tweetId+"")
                 if (tweetDetails){
-                    resolve({success:true, tweetDetails: JSON.parse(tweetDetails)})
+                    resolve({success:true, tweetDetails:  JSON.parse(JSON.stringify(JSON.parse(tweetDetails)))})
                 }else{
                     resolve({error:true, notFound : true})
                 } 

@@ -28,7 +28,7 @@ var self = module.exports = {
                 if (!chatMsgsCount)
                     chatMsgsCount = "0"
 
-                let msgDetails = {tweetId: chatMsgsCount, txt:txt, sender: username, sentAt:Date.now()}
+                let msgDetails = {msgId: chatMsgsCount, txt:txt, sender: username, sentAt:Date.now()}
                 
                 /**
                  * Using transactional approach to avoid partial writes:

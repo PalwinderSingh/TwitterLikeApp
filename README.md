@@ -9,46 +9,47 @@ A Twitter like dummy app
 
 
 ## Installation:
-1. cd to root directory of the project and run `npm install`<br>
+1. cd to root directory of the project<br>
 2. run `npm install` to install all the required packages<br>
 3. For testing, run: `npm test` 
+4. to start app, run `node index.js`
 
 
 ## Stored data structure(Redis):
 ```
- 		1. "users":
-				<username1> : hashed_pwd
-				<username2> : hashed_pwd
-				...
+	1. "users":
+		<username1> : hashed_pwd
+		<username2> : hashed_pwd
+		...
 
-		
+	
 
-		2. "tweets":
-				<tweetId> :  '{tweetId: <tweetCount>, txt:<txt>, username: <username>, createdAt:<Date.now()>}'
-				...
-
-
-		3. "tweets_count": <count>
+	2. "tweets":
+			<tweetId> :  '{tweetId: <tweetCount>, txt:<txt>, username: <username>, createdAt:<Date.now()>}'
+			...
 
 
-		4. <username>"_tweets" : 
-						<tweetId1> : ""
-						<tweetId2> : ""
-						...
+	3. "tweets_count": <count>
 
 
-		5. <chat_username1:username2>":
-					<msgId> :  {msgId: <chatMsgsCount>, txt:<txt>, sender: <username>, sentAt:<Date.now()>}
+	4. <username>"_tweets" : 
+					<tweetId1> : ""
+					<tweetId2> : ""
 					...
 
 
-		6. <chatId>"_msgsCount": <msgsCount>
+	5. <chat_username1:username2>":
+				<msgId> :  {msgId: <chatMsgsCount>, txt:<txt>, sender: <username>, sentAt:<Date.now()>}
+				...
 
-		7. (Currently not implemented)
 
-			"<username>_chats":  
-							<chatId3>
-							<chatId7>
-							...
+	6. <chatId>"_msgsCount": <msgsCount>
+
+	7. (Currently not implemented)
+
+		"<username>_chats":  
+						<chatId3>
+						<chatId7>
+						...
 
 ```
